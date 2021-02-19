@@ -23,21 +23,15 @@ class EventRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param $name
-     * @param Schema $schema
+     * @param Event $event
+     * @return Event
      */
-    public function saveEvent($name, Schema $schema)
+    public function saveEvent(Event $event)
     {
-        $newEvent = new Event();
-
-        $newEvent
-            ->setName($name)
-            ->setSchema($schema);
-
-        $this->manager->persist($newEvent);
+        $this->manager->persist($event);
         $this->manager->flush();
 
-        return $newEvent;
+        return $event;
     }
 
     /**

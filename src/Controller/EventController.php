@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Event;
+use App\Entity\Schema;
 use App\Repository\EventRepository;
+use App\Service\ValidatorManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,18 +42,14 @@ class EventController
      *     )
      * )
      */
-    public function add(Request $request): JsonResponse
+    public function add(Request $request, ValidatorManager $validatorManager): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        //validation
+        $validEntity = $validatorManager->validate($request, new Event(), ['create']);
+        if($validEntity instanceof JsonResponse) return $validEntity;
 
-        $name = (isset($data['name'])) ? $data['name'] : null;
-        $schema = (isset($data['schema'])) ? $data['schema'] : null;
-
-        if (empty($name) || empty($schema)) {
-            throw new NotFoundHttpException('Expecting mandatory parameters!');
-        }
-
-        $event = $this->eventRepository->saveEvent($name, $schema);
+        //save entity
+        $event = $this->eventRepository->saveEvent($validEntity);
 
         return new JsonResponse(['status' => 'success', 'message' => 'Event created!', 'id' => $event->getId()], Response::HTTP_CREATED);
     }
@@ -69,7 +68,7 @@ class EventController
         $data = [
             'id' => $event->getId(),
             'name' => $event->getName(),
-            'schema' => $event->getSchema()->getId(),
+            'schema' => ($event->getSchema() instanceof Schema) ? $event->getId() : null,
         ];
 
         return new JsonResponse($data, Response::HTTP_OK);
@@ -89,13 +88,13 @@ class EventController
      *     )
      * )
      */
-    public function update($id, Request $request): JsonResponse
+    public function update($id, Request $request, ValidatorManager $validatorManager): JsonResponse
     {
         $event = $this->eventRepository->findOneBy(['id' => $id]);
-        $data = json_decode($request->getContent(), true);
 
-        empty($data['name']) ? true : $event->setName($data['name']);
-        empty($data['schema']) ? true : $event->setSchema($data['schema']);
+        //validation
+        $validEntity = $validatorManager->validate($request, $event);
+        if($validEntity instanceof JsonResponse) return $validEntity;
 
         $updatedEvent = $this->eventRepository->updateEvent($event);
 
@@ -132,7 +131,7 @@ class EventController
             $data[] = [
                 'id' => $event->getId(),
                 'name' => $event->getName(),
-                'schema' => $event->getSchema()->getId(),
+                'schema' => ($event->getSchema() instanceof Schema) ? $event->getId() : null,
             ];
         }
 

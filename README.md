@@ -36,7 +36,7 @@ This project requires `postgres` database with `postgres` user with `postgres` p
 Clone the repository and access to folder created, run composer, create database, schema and start server 
 ```
 git clone https://github.com/sebardo/zentate.git
-cd acilia_api_rest
+cd zentate
 composer install
 ./bin/console doctrine:database:create
 ./bin/console doctrine:schema:create
@@ -89,4 +89,4 @@ Steps
 2. Add seats to schema (create group and add multiple seats)
 3. Set category to seats (can you set to group or a single seat)
 4. Create evento with an schema
-5 Interact with seats selection
+5. Interact with seats selection
